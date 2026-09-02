@@ -7,7 +7,8 @@
     "dev": "tsx --watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "gendb": "prisma generate",
-    "migrate-db": "prisma migrate dev"
+    "migrate-db": "prisma migrate dev",
+    "email:dev": "email dev --dir ./src/emails/templates --port 8000"
   },
   "author": "",
   "license": "MIT",
@@ -15,19 +16,25 @@
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "7.10.0",
     "@prisma/config": "^7.10.0",
+    "@react-email/components": "^1.0.12",
     "argon2": "^0.45.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pg": "^8.23.0",
-    "tsc": "^2.0.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-email": "6.9.3",
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@react-email/ui": "6.9.3",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^26.4.0",
     "@types/pg": "^8.23.1",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
     "prisma": "7.10.0",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"

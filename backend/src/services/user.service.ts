@@ -30,7 +30,7 @@ export const registerUser = async (payload: UserInput) => {
                 id: user.id
             }
         },
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
     })
 
     const verificationUrl = `${process.env.APP_URL}/verify?token=${rawToken}`;
