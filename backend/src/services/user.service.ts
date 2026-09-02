@@ -4,6 +4,7 @@ import {AppError} from "../errors/AppError.js";
 import {generateToken, hashToken} from "../utils/token.js";
 import {createVerificationToken} from "../repository/verification.repo.js";
 import {VERIFICATION_TYPE} from "../generatated/enums.js";
+import {hashPassword} from "../utils/password.js";
 
 export const registerUser = async (payload: UserInput) => {
     const exists = await userExists(payload.email);
@@ -11,7 +12,12 @@ export const registerUser = async (payload: UserInput) => {
         throw new AppError("Email Already in use", 400);
     }
 
-    const user = await createUser(payload);
+    const passwordHash = await hashPassword(payload.password);
+
+    const user = await createUser({
+        ...payload,
+        password: passwordHash,
+    });
 
     const rawToken = generateToken();
     const tokenHash = hashToken(rawToken);
