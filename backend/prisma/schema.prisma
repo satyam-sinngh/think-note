@@ -1,0 +1,19 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generatated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String  @id @unique @default(cuid(2))
+  name       String
+  email      String  @unique
+  password   String
+  isVerified Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}

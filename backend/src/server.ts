@@ -1,8 +1,5 @@
-import {config} from "dotenv";
+import "dotenv/config";
 
-config({
-    path: `${process.cwd()}/.env.local`,
-})
 import app from "./app.js";
 import express from "express";
 import cors from "cors";
