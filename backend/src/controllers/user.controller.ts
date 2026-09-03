@@ -1,5 +1,7 @@
 import {Request, Response, NextFunction} from "express";
-import {loginUser, registerUser, verifyUserAccount} from "../services/user.service.js";
+import {getUser, loginUser, registerUser, verifyUserAccount} from "../services/user.service.js";
+import {AuthRequest} from "../middlewares/auth.middleware.js";
+import {AppError} from "../errors/AppError.js";
 
 export const register = async (
     req: Request,
@@ -57,5 +59,22 @@ export const login = async (
             })
     } catch (err) {
         next(err);
+    }
+}
+
+export const me = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const user = await getUser(req.user?.email!);
+        return res.status(200).json({
+            success: true,
+            user
+        })
+    } catch (err) {
+        console.error(err);
+        throw new AppError("Failed to fetch User", 500);
     }
 }

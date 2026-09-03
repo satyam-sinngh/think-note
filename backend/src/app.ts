@@ -3,6 +3,7 @@ import type {Express, Request, Response} from "express";
 import cors from "cors";
 import {errorMiddleware} from "./middlewares/error.middleware.js";
 import authRouter from "./routes/user.route.js"
+import cookieParser from "cookie-parser";
 
 const app: Express = express();
 
@@ -11,7 +12,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(cors({
     credentials: true,
 }));
-
+app.use(cookieParser());
 
 app.get("/", (_req: Request, res: Response) => {
     return res.send("API is running");

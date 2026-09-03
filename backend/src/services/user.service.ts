@@ -110,3 +110,12 @@ export const loginUser = async (payload: LoginInput) => {
     const token = signJwtToken(data);
     return {token, user: safeUser}
 }
+
+export const getUser = async (email: string) => {
+    const user = await findUserByEmail(email);
+    if (!user) {
+        throw new AppError("User not found", 404);
+    }
+    const {password, ...safeUser} = user;
+    return safeUser;
+}
