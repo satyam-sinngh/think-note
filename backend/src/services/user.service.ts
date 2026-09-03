@@ -1,5 +1,5 @@
-import {UserInput, verifyUserAccountInput} from "../types/user.type.js";
-import {createUser, findUserById, userExists, verifyUser} from "../repository/user.repo.js";
+import {LoginInput, UserInput, verifyUserAccountInput} from "../types/user.type.js";
+import {createUser, findUserByEmail, findUserById, userExists, verifyUser} from "../repository/user.repo.js";
 import {AppError} from "../errors/AppError.js";
 import {generateToken, hashToken} from "../utils/token.js";
 import {
@@ -8,9 +8,10 @@ import {
     markVerificationTokenAsUsed
 } from "../repository/verification.repo.js";
 import {VERIFICATION_TYPE} from "../generatated/enums.js";
-import {hashPassword} from "../utils/password.js";
+import {hashPassword, verifyPassword} from "../utils/password.js";
 import {sendActivationEmail} from "../emails/methods/sendActivationEmail.js";
 import {sendWelcomeEmail} from "../emails/methods/sendWelcomeEmail.js";
+import {JwtPayload, signJwtToken} from "../utils/jwt.js";
 
 export const registerUser = async (payload: UserInput) => {
     const exists = await userExists(payload.email);
@@ -77,3 +78,35 @@ export const verifyUserAccount = async ({rawToken}: verifyUserAccountInput) => {
 
 }
 
+export const loginUser = async (payload: LoginInput) => {
+    const exists = await userExists(payload.email);
+    if (!exists) {
+        throw new AppError("Invalid Credentials", 400);
+    }
+
+    const user = await findUserByEmail(payload.email);
+
+    if (!user) {
+        throw new AppError("Invalid Credentials", 400);
+    }
+
+    const isValid = await verifyPassword(user.password, payload.password);
+
+    if (!isValid) {
+        throw new AppError("Invalid Credentials", 400);
+    }
+
+    if (!user.isVerified) {
+        throw new AppError("Please verify your account to access the Portal", 400);
+    }
+
+    const data: JwtPayload = {
+        userId: user.id,
+        email: user.email
+    }
+
+    const {password, ...safeUser} = user;
+
+    const token = signJwtToken(data);
+    return {token, user: safeUser}
+}

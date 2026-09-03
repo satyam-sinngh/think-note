@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import {registerUser, verifyUserAccount} from "../services/user.service.js";
+import {loginUser, registerUser, verifyUserAccount} from "../services/user.service.js";
 
 export const register = async (
     req: Request,
@@ -23,11 +23,39 @@ export const verify = async (
     res: Response,
     next: NextFunction
 ) => {
+    try {
 
-    const result = await verifyUserAccount(req.body);
-    const {success, ...data} = result;
-    return res.status(200).json({
-        success,
-        data,
-    })
+
+        const result = await verifyUserAccount(req.body);
+        const {success, ...data} = result;
+        return res.status(200).json({
+            success,
+            data,
+        })
+    } catch (err) {
+        next(err)
+    }
+}
+
+export const login = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const {token, user} = await loginUser(req.body);
+        res
+            .cookie("token", token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "none",
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7D
+            })
+            .json({
+                success: true,
+                user
+            })
+    } catch (err) {
+        next(err);
+    }
 }
