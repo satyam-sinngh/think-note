@@ -10,3 +10,7 @@ export const registerSchema = z.object({
     }),
     password: z.string().min(8, {error: "Password must be at least 8 characters"}),
 })
+
+export const verifyAccountSchema = z.object({
+    rawToken: z.string().min(1, {error: "token is required"}),
+})

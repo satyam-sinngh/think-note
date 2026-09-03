@@ -1,11 +1,16 @@
-import {UserInput} from "../types/user.type.js";
-import {createUser, userExists} from "../repository/user.repo.js";
+import {UserInput, verifyUserAccountInput} from "../types/user.type.js";
+import {createUser, findUserById, userExists, verifyUser} from "../repository/user.repo.js";
 import {AppError} from "../errors/AppError.js";
 import {generateToken, hashToken} from "../utils/token.js";
-import {createVerificationToken} from "../repository/verification.repo.js";
+import {
+    createVerificationToken,
+    findVerificationTokenByHash,
+    markVerificationTokenAsUsed
+} from "../repository/verification.repo.js";
 import {VERIFICATION_TYPE} from "../generatated/enums.js";
 import {hashPassword} from "../utils/password.js";
 import {sendActivationEmail} from "../emails/methods/sendActivationEmail.js";
+import {sendWelcomeEmail} from "../emails/methods/sendWelcomeEmail.js";
 
 export const registerUser = async (payload: UserInput) => {
     const exists = await userExists(payload.email);
@@ -45,3 +50,30 @@ export const registerUser = async (payload: UserInput) => {
     return {id: user.id, email: user.email}
 
 }
+
+export const verifyUserAccount = async ({rawToken}: verifyUserAccountInput) => {
+    const hash = hashToken(rawToken);
+    const verificationToken = await findVerificationTokenByHash(hash, VERIFICATION_TYPE.ACCOUNT_VERIFICATION);
+    if (!verificationToken) {
+        throw new AppError("Link Expired", 400);
+    }
+
+    const user = await findUserById(verificationToken.userId);
+    if (!user) {
+        throw new AppError("Link malformed!", 400);
+    }
+
+    // perform verification
+    await verifyUser(user.id);
+    await markVerificationTokenAsUsed(verificationToken.id);
+
+    // send Welcome Email
+    await sendWelcomeEmail({
+        name: user.name,
+        email: user.email
+    })
+
+    return {success: true, id: user.id, email: user.email};
+
+}
+

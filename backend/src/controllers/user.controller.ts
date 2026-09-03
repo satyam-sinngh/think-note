@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import {registerUser} from "../services/user.service.js";
+import {registerUser, verifyUserAccount} from "../services/user.service.js";
 
 export const register = async (
     req: Request,
@@ -16,4 +16,18 @@ export const register = async (
     } catch (err) {
         next(err);
     }
+}
+
+export const verify = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+
+    const result = await verifyUserAccount(req.body);
+    const {success, ...data} = result;
+    return res.status(200).json({
+        success,
+        data,
+    })
 }
