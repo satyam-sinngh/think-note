@@ -23,6 +23,7 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+  notes     Note[]
 }
 
 model VerificationToken {
@@ -34,6 +35,21 @@ model VerificationToken {
   tokenHash String
   expiresAt DateTime
   usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Note {
+  id     String @id @unique @default(cuid(2))
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title      String
+  content    String  @db.Text
+  isArchived Boolean @default(false)
+
+  tags String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
