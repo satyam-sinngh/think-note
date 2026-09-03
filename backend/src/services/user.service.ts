@@ -5,6 +5,7 @@ import {generateToken, hashToken} from "../utils/token.js";
 import {createVerificationToken} from "../repository/verification.repo.js";
 import {VERIFICATION_TYPE} from "../generatated/enums.js";
 import {hashPassword} from "../utils/password.js";
+import {sendActivationEmail} from "../emails/methods/sendActivationEmail.js";
 
 export const registerUser = async (payload: UserInput) => {
     const exists = await userExists(payload.email);
@@ -35,7 +36,11 @@ export const registerUser = async (payload: UserInput) => {
 
     const verificationUrl = `${process.env.APP_URL}/verify?token=${rawToken}`;
 
-    // TODO: SEND Email
+    await sendActivationEmail({
+        name: user.name,
+        email: user.email,
+        link: verificationUrl,
+    });
 
     return {id: user.id, email: user.email}
 
