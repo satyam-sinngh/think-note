@@ -1,5 +1,5 @@
-import {Response, NextFunction} from "express";
-import {addNote, getUserNotes} from "../services/note.service.js";
+import {Request, Response, NextFunction} from "express";
+import {addNote, getNoteById, getUserNotes} from "../services/note.service.js";
 import {AuthRequest} from "../middlewares/auth.middleware.js";
 import {AppError} from "../errors/AppError.js";
 
@@ -45,5 +45,23 @@ export const fetchAllNotes = async (
 
     } catch (err) {
         next(err)
+    }
+}
+
+export const fetchNoteById = async (
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const id = req.params.id;
+        const note = await getNoteById(id);
+        return res.status(200).json({
+            success: true,
+            note
+        })
+    } catch (err) {
+        console.error(err)
+        next(err);
     }
 }
