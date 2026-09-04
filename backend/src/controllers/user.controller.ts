@@ -1,7 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import {getUser, loginUser, registerUser, verifyUserAccount} from "../services/user.service.js";
 import {AuthRequest} from "../middlewares/auth.middleware.js";
-import {AppError} from "../errors/AppError.js";
 
 export const register = async (
     req: Request,
@@ -75,6 +74,26 @@ export const me = async (
         })
     } catch (err) {
         console.error(err);
-        throw new AppError("Failed to fetch User", 500);
+        next(err);
+    }
+}
+
+export const logout = async (
+    _req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7D
+        });
+
+        return res.sendStatus(204);
+    } catch (err) {
+        console.error(err);
+        next(err);
     }
 }
