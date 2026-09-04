@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import {addNote, getNoteById, getUserNotes} from "../services/note.service.js";
+import {addNote, getNoteById, getUserNotes, updateNoteService} from "../services/note.service.js";
 import {AuthRequest} from "../middlewares/auth.middleware.js";
 import {AppError} from "../errors/AppError.js";
 
@@ -64,4 +64,28 @@ export const fetchNoteById = async (
         console.error(err)
         next(err);
     }
+}
+
+export const update = async (
+    req: AuthRequest<{ id: string }>,
+    res: Response,
+    next: NextFunction
+) => {
+    const {id} = req.params;
+    const user = req.user;
+    if (!user) {
+        return next(new AppError("Unauthorized", 401));
+    }
+
+    const payloadWithUser = {
+        id,
+        userId: user.userId,
+        data: req.body
+    }
+
+    const updatedNote = await updateNoteService(payloadWithUser)
+    return res.status(200).json({
+        success: true,
+        updatedNote
+    })
 }

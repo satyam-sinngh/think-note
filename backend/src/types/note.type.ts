@@ -8,5 +8,6 @@ type RequireAtLeastOne<T> = {
 
 export type NoteUpdateInput = {
     id: string,
+    userId: string,
     data: RequireAtLeastOne<Pick<Prisma.NoteUpdateInput, "title" | "content" | "tags">>,
 };

@@ -19,7 +19,10 @@ export const createNote = async (data: NoteInput) => {
 
 export const updateNote = async (input: NoteUpdateInput) => {
     return await prisma.note.update({
-        where: {id: input.id},
+        where: {
+            id: input.id,
+            userId: input.userId,
+        },
         data: input.data
     })
 }
