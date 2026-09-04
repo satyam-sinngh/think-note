@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import {addNote, getNoteById, getUserNotes, updateNoteService} from "../services/note.service.js";
+import {addNote, deleteNoteService, getNoteById, getUserNotes, updateNoteService} from "../services/note.service.js";
 import {AuthRequest} from "../middlewares/auth.middleware.js";
 import {AppError} from "../errors/AppError.js";
 
@@ -88,4 +88,23 @@ export const update = async (
         success: true,
         updatedNote
     })
+}
+
+export const deleteNote = async (
+    req: Request<{ id: string }>,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const {id} = req.params;
+
+        const deletedNote = await deleteNoteService(id);
+        return res.status(200).json({
+            success: true,
+            deletedNote
+        })
+
+    } catch (err) {
+        next(err);
+    }
 }

@@ -1,5 +1,5 @@
 import {NoteInput, NoteUpdateInput} from "../types/note.type.js";
-import {createNote, fetchNoteById, fetchNotes, updateNote} from "../repository/note.repo.js";
+import {createNote, deleteNote, fetchNoteById, fetchNotes, updateNote} from "../repository/note.repo.js";
 import {AppError} from "../errors/AppError.js";
 
 export const addNote = async (noteInput: NoteInput) => {
@@ -25,4 +25,12 @@ export const updateNoteService = async (noteInput: NoteUpdateInput) => {
         throw new AppError("Note Note Found!", 404);
     }
     return note;
+}
+
+export const deleteNoteService = async (noteId: string) => {
+    const note = await fetchNoteById(noteId);
+    if (!note) {
+        throw new AppError("Note Note Found!", 404);
+    }
+    return await deleteNote(noteId);
 }
