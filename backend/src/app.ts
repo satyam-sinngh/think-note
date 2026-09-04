@@ -4,6 +4,8 @@ import cors from "cors";
 import {errorMiddleware} from "./middlewares/error.middleware.js";
 import authRouter from "./routes/user.route.js"
 import cookieParser from "cookie-parser";
+import {authMiddleware} from "./middlewares/auth.middleware.js";
+import noteRouter from "./routes/note.route.js";
 
 const app: Express = express();
 
@@ -25,6 +27,7 @@ app.get("/health", (_req: Request, res: Response) => {
 })
 
 app.use("/api/auth", authRouter);
+app.use("/api/notes", authMiddleware, noteRouter)
 
 app.use(errorMiddleware);
 

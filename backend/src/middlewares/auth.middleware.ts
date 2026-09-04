@@ -15,8 +15,6 @@ export const authMiddleware = async (
         req.cookies?.token ??
         req.headers.authorization?.replace(/^Bearer\s+/, '');
 
-    console.log("token", req.cookies?.token);
-
     if (!token) {
         throw new AppError("Unauthorized", 401);
     }
