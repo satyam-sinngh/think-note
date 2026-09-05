@@ -42,6 +42,15 @@ export class NoteRepository {
         })
     }
 
+    async findByIdAndUserId(noteId: string, userId: string) {
+        return await prisma.note.findUnique({
+            where: {
+                id: noteId,
+                userId: userId
+            }
+        })
+    }
+
 }
 
 export const noteRepository = new NoteRepository();
