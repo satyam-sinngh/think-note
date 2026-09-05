@@ -2,6 +2,7 @@ import {Request, Response, NextFunction} from "express";
 import {addNote, deleteNoteService, getNoteById, getUserNotes, updateNoteService} from "../services/note.service.js";
 import {AuthRequest} from "../middlewares/auth.middleware.js";
 import {AppError} from "../errors/AppError.js";
+import {noteAIService} from "../services/note-ai.service.js";
 
 export const create = async (
     req: AuthRequest,
@@ -106,5 +107,57 @@ export const deleteNote = async (
 
     } catch (err) {
         next(err);
+    }
+}
+
+
+export const summarizeNoteStream = async (
+    req: AuthRequest<{ id: string }>,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+
+
+        const {id} = req.params;
+        const user = req.user;
+        if (!user) {
+            return next(new AppError("Unauthorized", 401));
+        }
+
+        const {userId} = user;
+
+
+        res.setHeader(
+            "Content-type",
+            "text/event-stream"
+        );
+
+        res.setHeader(
+            "Cache-Control",
+            "no-cache"
+        )
+
+        res.setHeader(
+            "Connection",
+            "keep-alive"
+        )
+
+        res.flushHeaders()
+
+        const send = (data: Object) => {
+            res.write(`data: ${JSON.stringify(data)}\n\n`)
+        }
+
+        for await (const chunk of noteAIService.summariseNoteStream(id, userId)) {
+            send(chunk);
+            if (chunk.type === "done" || chunk.type === "error") {
+                res.end();
+                return;
+            }
+        }
+        res.end();
+    } catch (err) {
+        next(err)
     }
 }

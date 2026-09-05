@@ -1,8 +1,8 @@
-import {AIGenerationRepository} from "../repository/ai-generation.repository.js";
+import {aiGenerationRepository, AIGenerationRepository} from "../repository/ai-generation.repository.js";
 
-import {NoteRepository} from "../repository/note.repo.js";
+import {noteRepository, NoteRepository} from "../repository/note.repo.js";
 
-import {analyseNote} from "../ai/index.js";
+import {analyseNote, analyseNoteStream} from "../ai/index.js";
 import {AppError} from "../errors/AppError.js";
 
 export class NoteAIService {
@@ -43,4 +43,42 @@ export class NoteAIService {
 
     }
 
+
+    async* summariseNoteStream(
+        noteId: string,
+        userId: string,
+    ) {
+        const note = await this.noteRepository.findByIdAndUserId(noteId, userId);
+        if (!note) {
+            throw new AppError("Note Note Found!", 404);
+        }
+
+        for await (const chunk of analyseNoteStream(note.title, note.content, note.tags)) {
+            yield chunk;
+
+            if (chunk.type === "done" && chunk.delta) {
+                const {summary, actionItems, suggestedTags, suggestedTitle, tokensUsed, model} = chunk.delta;
+                await this.aiGenerationRepository.create({
+                    summary,
+                    actionItems,
+                    suggestedTags,
+                    tokensUsed,
+                    suggestedTitle,
+                    model,
+                    note: {
+                        connect: {
+                            id: noteId,
+                        }
+                    }
+
+                })
+            }
+        }
+    }
+
 }
+
+export const noteAIService = new NoteAIService(
+    noteRepository,
+    aiGenerationRepository
+);
