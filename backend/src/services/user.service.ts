@@ -1,5 +1,5 @@
 import {LoginInput, UserInput, verifyUserAccountInput} from "../types/user.type.js";
-import {createUser, findUserByEmail, findUserById, userExists, verifyUser} from "../repository/user.repo.js";
+import {userRepository} from "../repository/user.repo.js";
 import {AppError} from "../errors/AppError.js";
 import {generateToken, hashToken} from "../utils/token.js";
 import {
@@ -14,14 +14,14 @@ import {sendWelcomeEmail} from "../emails/methods/sendWelcomeEmail.js";
 import {JwtPayload, signJwtToken} from "../utils/jwt.js";
 
 export const registerUser = async (payload: UserInput) => {
-    const exists = await userExists(payload.email);
+    const exists = await userRepository.userExists(payload.email);
     if (exists) {
         throw new AppError("Email Already in use", 400);
     }
 
     const passwordHash = await hashPassword(payload.password);
 
-    const user = await createUser({
+    const user = await userRepository.createUser({
         ...payload,
         password: passwordHash,
     });
@@ -59,13 +59,13 @@ export const verifyUserAccount = async ({rawToken}: verifyUserAccountInput) => {
         throw new AppError("Link Expired", 400);
     }
 
-    const user = await findUserById(verificationToken.userId);
+    const user = await userRepository.findUserById(verificationToken.userId);
     if (!user) {
         throw new AppError("Link malformed!", 400);
     }
 
     // perform verification
-    await verifyUser(user.id);
+    await userRepository.verifyUser(user.id);
     await markVerificationTokenAsUsed(verificationToken.id);
 
     // send Welcome Email
@@ -79,12 +79,12 @@ export const verifyUserAccount = async ({rawToken}: verifyUserAccountInput) => {
 }
 
 export const loginUser = async (payload: LoginInput) => {
-    const exists = await userExists(payload.email);
+    const exists = await userRepository.userExists(payload.email);
     if (!exists) {
         throw new AppError("Invalid Credentials", 400);
     }
 
-    const user = await findUserByEmail(payload.email);
+    const user = await userRepository.findUserByEmail(payload.email);
 
     if (!user) {
         throw new AppError("Invalid Credentials", 400);
@@ -112,7 +112,7 @@ export const loginUser = async (payload: LoginInput) => {
 }
 
 export const getUser = async (email: string) => {
-    const user = await findUserByEmail(email);
+    const user = await userRepository.findUserByEmail(email);
     if (!user) {
         throw new AppError("User not found", 404);
     }

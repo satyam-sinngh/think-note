@@ -1,40 +1,44 @@
 import prisma from "../lib/prisma.js";
 import {UserInput} from "../types/user.type.js";
 
-export const findUserById = async (userId: string) => {
-    return await prisma.user.findUnique({
-        where: {
-            id: userId
-        }
-    })
+export class UserRepository {
+    async findUserById(userId: string) {
+        return await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+    }
+
+    async findUserByEmail(email: string) {
+        return await prisma.user.findUnique({
+            where: {
+                email
+            }
+        })
+    }
+
+    async userExists(email: string) {
+        const user = await prisma.user.findUnique({
+            where: {email}
+        })
+
+        return Boolean(user)
+    }
+
+    async createUser(data: UserInput) {
+        return await prisma.user.create({
+            data: data
+        })
+    }
+
+
+    async verifyUser(userId: string) {
+        return await prisma.user.update({
+            where: {id: userId},
+            data: {isVerified: true}
+        })
+    }
 }
 
-export const findUserByEmail = async (email: string) => {
-    return await prisma.user.findUnique({
-        where: {
-            email
-        }
-    })
-}
-
-export const userExists = async (email: string) => {
-    const user = await prisma.user.findUnique({
-        where: {email}
-    })
-
-    return Boolean(user)
-}
-
-export const createUser = async (data: UserInput) => {
-    return await prisma.user.create({
-        data: data
-    })
-}
-
-
-export const verifyUser = async (userId: string) => {
-    return await prisma.user.update({
-        where: {id: userId},
-        data: {isVerified: true}
-    })
-}
+export const userRepository = new UserRepository();
