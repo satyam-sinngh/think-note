@@ -51,6 +51,23 @@ model Note {
 
   tags String[]
 
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+  aiGenerations AiGeneration[]
+}
+
+model AiGeneration {
+  id     String @id @unique @default(cuid(2))
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  summary        String   @db.Text
+  actionItems    String[] @default([])
+  suggestedTitle String
+  suggestedTags  String[] @default([])
+  tokensUsed     Int
+  model          String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
