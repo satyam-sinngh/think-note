@@ -2,11 +2,7 @@ import {LoginInput, UserInput, verifyUserAccountInput} from "../types/user.type.
 import {userRepository} from "../repository/user.repo.js";
 import {AppError} from "../errors/AppError.js";
 import {generateToken, hashToken} from "../utils/token.js";
-import {
-    createVerificationToken,
-    findVerificationTokenByHash,
-    markVerificationTokenAsUsed
-} from "../repository/verification.repo.js";
+import {verificationRepository} from "../repository/verification.repo.js";
 import {VERIFICATION_TYPE} from "../generatated/enums.js";
 import {hashPassword, verifyPassword} from "../utils/password.js";
 import {sendActivationEmail} from "../emails/methods/sendActivationEmail.js";
@@ -29,7 +25,7 @@ export const registerUser = async (payload: UserInput) => {
     const rawToken = generateToken();
     const tokenHash = hashToken(rawToken);
 
-    await createVerificationToken({
+    await verificationRepository.createVerificationToken({
         tokenHash,
         type: VERIFICATION_TYPE.ACCOUNT_VERIFICATION,
         user: {
@@ -54,7 +50,7 @@ export const registerUser = async (payload: UserInput) => {
 
 export const verifyUserAccount = async ({rawToken}: verifyUserAccountInput) => {
     const hash = hashToken(rawToken);
-    const verificationToken = await findVerificationTokenByHash(hash, VERIFICATION_TYPE.ACCOUNT_VERIFICATION);
+    const verificationToken = await verificationRepository.findVerificationTokenByHash(hash, VERIFICATION_TYPE.ACCOUNT_VERIFICATION);
     if (!verificationToken) {
         throw new AppError("Link Expired", 400);
     }
@@ -66,7 +62,7 @@ export const verifyUserAccount = async ({rawToken}: verifyUserAccountInput) => {
 
     // perform verification
     await userRepository.verifyUser(user.id);
-    await markVerificationTokenAsUsed(verificationToken.id);
+    await verificationRepository.markVerificationTokenAsUsed(verificationToken.id);
 
     // send Welcome Email
     await sendWelcomeEmail({
